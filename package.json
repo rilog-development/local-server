@@ -1,0 +1,43 @@
+{
+  "name": "@rilog-development/rilog-local-server",
+  "version": "0.0.1",
+  "main": "server.ts",
+  "types": "dist/index.d.ts",
+  "author": "Andrii Karnaukh <kaowebdev@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "tsc && node ./dist/server.js",
+    "start": "nodemon src/index.ts",
+    "test": "jest --config jestconfig.json",
+    "build": "tsc"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "keywords": [
+    "rilog",
+    "rilog local server"
+  ],
+  "devDependencies": {
+    "@types/jest": "^29.5.1",
+    "jest": "^29.5.0",
+    "nodemon": "^3.0.3",
+    "prettier": "^2.8.8",
+    "ts-jest": "^29.1.0",
+    "tslint": "^6.1.3",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.5",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "ts-node": "^10.9.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rilog-development/rilog-lib.git"
+  }
+}
