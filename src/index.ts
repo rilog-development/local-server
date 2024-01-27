@@ -10,7 +10,8 @@ export default class Server {
 
   private config(app: Application): void {
     const corsOptions: CorsOptions = {
-      origin: "http://localhost:3025"
+      origin: "*",
+      methods: "POST"
     };
 
     app.use(cors(corsOptions));

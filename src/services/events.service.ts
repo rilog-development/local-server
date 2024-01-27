@@ -7,7 +7,7 @@ import { getEventTypeLabel } from "../utils/events";
 
 
 export interface IEventsServis {
-    saveEvents: (data: SaveEvents) => Promise<boolean>;
+    saveEvents:  (data: SaveEvents) => Promise<boolean>;
     decodeData: (data: string) => any;
 }
 
@@ -20,7 +20,7 @@ class EventsService implements IEventsServis {
         const filePath = path.join(folderPath, `logs-${formatDate(currentDate)}-${uToken}.${fileFormat}`)
 
         try{
-            
+
             try {
                 await fs.access(folderPath);
             } catch (_err) {
