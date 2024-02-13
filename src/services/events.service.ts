@@ -13,8 +13,8 @@ export interface IEventsServis {
 
 class EventsService implements IEventsServis {
     constructor() {}
-    async saveEvents({ appName, events, uToken, fileFormat }: SaveEvents): Promise<boolean> {
-        
+    async saveEvents({ appName, params, events, uToken, fileFormat }: SaveEvents): Promise<boolean> {
+
         const currentDate = new Date();
         const folderPath = path.join(__dirname, "../../../logs", getSlugName(appName))
         const filePath = path.join(folderPath, `logs-${formatDate(currentDate)}-${uToken}.${fileFormat}`)
@@ -31,7 +31,7 @@ class EventsService implements IEventsServis {
                 await fs.access(filePath);
                 await this.appendDataToFile(filePath, events);
             } catch (_err) {
-                const fileContent = this.generateLogHeader({ appName, uToken, date: formatDate(currentDate, true)}) + this.getFormatedEvents(events);
+                const fileContent = this.generateLogHeader({ appName, params, uToken, date: formatDate(currentDate, true)}) + this.getFormatedEvents(events);
                 await fs.writeFile(filePath, fileContent);
             }
         } catch (_err) {
@@ -50,8 +50,24 @@ class EventsService implements IEventsServis {
         await fs.appendFile(filePath, this.getFormatedEvents(events));
     }
 
-    private generateLogHeader({ appName, uToken, date}: Partial<SaveEvents> & { date: string }) {
-        return `App: ${appName}\nConnection: ${uToken}\nCreated at: ${date}\n`
+    private generateLogHeader({ appName, params, uToken, date}: Partial<SaveEvents> & { date: string }) {
+        return `App: ${appName}\nConnection: ${uToken}\nCreated at: ${date}\n ${this.getFormatedParams(params)}${this.getDivider()}`
+    }
+
+    private getFormatedParams(params: Record<string, string> | undefined) {
+        if (!params) return '';
+
+        let paramsStr = `Params:\n`;
+
+        Object.keys(params).map((key) => {
+            paramsStr += `${key}: ${params[key]}\n`
+        })
+
+        return paramsStr;
+    }
+
+    private getDivider() {
+        return `=====================\n`;
     }
 
     private getFormatedEvents(events: SaveEvents["events"]) {

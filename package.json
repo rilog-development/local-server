@@ -1,6 +1,6 @@
 {
   "name": "@rilog-development/rilog-local-server",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "main": "server.ts",
   "types": "dist/index.d.ts",
   "author": "Andrii Karnaukh <kaowebdev@gmail.com>",

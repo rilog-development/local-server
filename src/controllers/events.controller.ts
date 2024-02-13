@@ -27,10 +27,11 @@ class EventsController implements IEventsController {
         const result = await this.eventsService?.saveEvents({
             uToken: req.body.uToken || "unknown",
             appName: req.body.appName || "Unknown app",
+            params: req.body.params || undefined,
             fileFormat: req.body.fileFormat || FileFormats.TXT,
             events: decodedEvents || [],
          });
-        
+
         return res.json({ result: result ? "success" : "error" });
     }
 }
