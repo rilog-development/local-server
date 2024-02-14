@@ -1,5 +1,5 @@
 import { Request, Response, response } from "express";
-import EventsService, { IEventsServis } from "../services/events.service";
+import EventsService, { IEventsService } from "../services/events.service";
 import { FileFormats } from "../types/events";
 import { IRilogResponse } from "../types/rilog";
 
@@ -7,7 +7,7 @@ export interface IEventsController {
     saveEvents: (req: Request, res: Response) => Promise<Response>;
 }
 class EventsController implements IEventsController {
-    public eventsService: IEventsServis;
+    public eventsService: IEventsService;
 
     constructor() {
         this.eventsService = new EventsService();

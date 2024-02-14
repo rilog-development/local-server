@@ -6,18 +6,21 @@ import { formatDate, formatTimestamp } from "../utils/date";
 import { getEventTypeLabel } from "../utils/events";
 
 
-export interface IEventsServis {
+export interface IEventsService {
     saveEvents:  (data: SaveEvents) => Promise<boolean>;
     decodeData: (data: string) => any;
 }
 
-class EventsService implements IEventsServis {
+class EventsService implements IEventsService {
     constructor() {}
     async saveEvents({ appName, params, events, uToken, fileFormat }: SaveEvents): Promise<boolean> {
 
+
         const currentDate = new Date();
+        const fileNameBase = `${formatDate(currentDate)}-${uToken}.${fileFormat}`;
+        const fileName = `logs-${fileNameBase}`;
         const folderPath = path.join(__dirname, "../../../logs", getSlugName(appName))
-        const filePath = path.join(folderPath, `logs-${formatDate(currentDate)}-${uToken}.${fileFormat}`)
+        const filePath = path.join(folderPath, fileName);
 
         try{
 
