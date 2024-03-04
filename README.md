@@ -1,6 +1,6 @@
 # Rilog local server
 
-**Tool for [rilog-lib](https://github.com/rilog-development/rilog-lib) local storing events (to your drive).**
+**Tool for [rilog-lib](https://github.com/rilog-development/rilog-lib) local storing logs (events) to your drive.**
 
 ## Installation and usage
 ___
