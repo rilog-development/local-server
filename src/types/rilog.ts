@@ -21,5 +21,5 @@ export interface IRilogEventItem {
 }
 
 export interface IRilogResponse {
-    result: "success" | "error"
+    result: "success" | "error";
 }

@@ -15,7 +15,7 @@ export default class Server {
     };
 
     app.use(cors(corsOptions));
-    app.use(express.json());
+    app.use(express.json({ limit: "2500kb"}));
     app.use(express.urlencoded({ extended: true }));
   }
 }

@@ -3,7 +3,7 @@ import path from "path";
 import { SaveEvents } from "../types/events";
 import { getSlugName } from "../utils";
 import { formatDate, formatTimestamp } from "../utils/date";
-import { getEventTypeLabel } from "../utils/events";
+import {getEventRequestStatus, getEventTypeLabel} from "../utils/events";
 
 
 export interface IEventsServis {
@@ -12,12 +12,11 @@ export interface IEventsServis {
 }
 
 class EventsService implements IEventsServis {
-    constructor() {}
     async saveEvents({ appName, params, events, uToken, fileFormat }: SaveEvents): Promise<boolean> {
 
         const currentDate = new Date();
-        const folderPath = path.join(__dirname, "../../../logs", getSlugName(appName))
-        const filePath = path.join(folderPath, `logs-${formatDate(currentDate)}-${uToken}.${fileFormat}`)
+        const folderPath = path.join(__dirname, "../../../logs", getSlugName(appName));
+        const filePath = path.join(folderPath, `logs-${formatDate(currentDate)}-${uToken}.${fileFormat}`);
 
         try{
 
@@ -43,7 +42,7 @@ class EventsService implements IEventsServis {
     }
 
     decodeData(data: string) {
-        return JSON.parse(atob(data));
+        return JSON.parse(data);
     }
 
     private async appendDataToFile(filePath: string, events: SaveEvents["events"]) {
@@ -51,7 +50,7 @@ class EventsService implements IEventsServis {
     }
 
     private generateLogHeader({ appName, params, uToken, date}: Partial<SaveEvents> & { date: string }) {
-        return `App: ${appName}\nConnection: ${uToken}\nCreated at: ${date}\n ${this.getFormatedParams(params)}${this.getDivider()}`
+        return `App: ${appName}\nConnection: ${uToken}\nCreated at: ${date}\n ${this.getFormatedParams(params)}${this.getDivider()}`;
     }
 
     private getFormatedParams(params: Record<string, string> | undefined) {
@@ -60,8 +59,8 @@ class EventsService implements IEventsServis {
         let paramsStr = `Params:\n`;
 
         Object.keys(params).map((key) => {
-            paramsStr += `${key}: ${params[key]}\n`
-        })
+            paramsStr += `${key}: ${params[key]}\n`;
+        });
 
         return paramsStr;
     }
@@ -74,7 +73,7 @@ class EventsService implements IEventsServis {
         let eventsRow = "";
 
         events.forEach((event) => {
-            eventsRow += `[${formatTimestamp(event.date)}] [${getEventTypeLabel(event.type)}] Data: ${JSON.stringify(event.data)} Location: ${event.location.href} \n`;
+            eventsRow += `[${formatTimestamp(event.date)}] [${getEventTypeLabel(event.type)}${getEventRequestStatus(event)}] Data: ${JSON.stringify(event.data)} Location: ${event.location.href} \n`;
         });
 
         return eventsRow;

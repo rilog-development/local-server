@@ -8,6 +8,6 @@ export interface SaveEvents {
     appName: string;
     params?: Record<string, string>;
     uToken: string;
-    fileFormat: FileFormats,
-    events: IRilogEventItem[]
+    fileFormat: FileFormats;
+    events: IRilogEventItem[];
 }
