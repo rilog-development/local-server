@@ -1,5 +1,5 @@
-const getSlugName = (appName: string) => {
-    return appName.toLowerCase().replace(" ", "-");
-}
+const getSlugName = (appName: string): string => {
+  return appName.toLowerCase().replace(/\s+/g, '-');
+};
 
-export { getSlugName }
+export { getSlugName };

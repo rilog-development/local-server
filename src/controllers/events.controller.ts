@@ -1,39 +1,73 @@
-import { Request, Response, response } from "express";
-import EventsService, { IEventsServis } from "../services/events.service";
-import { FileFormats } from "../types/events";
-import { IRilogResponse } from "../types/rilog";
+import { Request, Response } from 'express';
+import EventsService, { IEventsService } from '../services/events.service';
+import { IRilogEventItem } from '../types/rilog';
 
 export interface IEventsController {
-    saveEvents: (req: Request, res: Response) => Promise<Response>;
+  saveEvents: (req: Request, res: Response) => Promise<void>;
 }
+
 class EventsController implements IEventsController {
-    public eventsService: IEventsServis;
+  private eventsService: IEventsService;
 
-    constructor() {
-        this.eventsService = new EventsService();
+  constructor() {
+    this.eventsService = new EventsService();
+  }
+
+  async saveEvents(req: Request, res: Response): Promise<void> {
+    let body: { events?: string; uToken?: string; appName?: string; params?: Record<string, string> };
+
+    try {
+      if (Buffer.isBuffer(req.body)) {
+        // application/octet-stream via sendBeacon
+        body = JSON.parse(req.body.toString('utf-8'));
+      } else if (typeof req.body === 'string') {
+        // text/plain via sendBeacon
+        body = JSON.parse(req.body);
+      } else {
+        // application/json — already parsed by Express
+        body = req.body as typeof body;
+      }
+    } catch {
+      res.json({ result: 'ERROR', message: 'Invalid request body' });
+      return;
     }
 
-    async saveEvents(req: Request, res: Response) {
-        if (!req.body.events || !req.body.uToken) {
-            res.status(400).send({ error: "appName, uToken or events not found."})
-        }
-
-        const decodedEvents = this.eventsService.decodeData(req.body.events);
-
-        if (!decodedEvents || !Array.isArray(decodedEvents)) {
-            res.status(400).send({ error: "events is not array."})
-        }
-
-        const result = await this.eventsService?.saveEvents({
-            uToken: req.body.uToken || "unknown",
-            appName: req.body.appName || "Unknown app",
-            params: req.body.params || undefined,
-            fileFormat: req.body.fileFormat || FileFormats.TXT,
-            events: decodedEvents || [],
-         });
-
-        return res.json({ result: result ? "success" : "error" });
+    if (!body.events || !body.uToken || !body.appName) {
+      res.json({ result: 'ERROR', message: 'appName, uToken and events are required' });
+      return;
     }
+
+    let events: IRilogEventItem[];
+    try {
+      events = this.eventsService.decodeData(body.events) as IRilogEventItem[];
+    } catch {
+      res.json({ result: 'ERROR', message: 'Failed to parse events' });
+      return;
+    }
+
+    if (!Array.isArray(events)) {
+      res.json({ result: 'ERROR', message: 'events must be an array' });
+      return;
+    }
+
+    const filePath = await this.eventsService.saveEvents({
+      uToken: body.uToken,
+      appName: body.appName,
+      params: body.params,
+      events,
+    });
+
+    if (filePath === null) {
+      res.json({ result: 'ERROR', message: 'Failed to write log file' });
+      return;
+    }
+
+    console.log(
+      `[rilog-local] ${new Date().toISOString()}  app=${body.appName}  events=${events.length}  file=${filePath}`
+    );
+
+    res.json({ result: 'SUCCESS', file: filePath });
+  }
 }
 
 export default EventsController;

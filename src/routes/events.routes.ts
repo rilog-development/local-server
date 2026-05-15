@@ -1,18 +1,9 @@
-import { Router } from "express";
-import EventsController, { IEventsController } from "../controllers/events.controller";
+import { Router } from 'express';
+import EventsController from '../controllers/events.controller';
 
-class EventsRoutes {
-    public router = Router();
-    public eventsController: IEventsController;
+const router = Router();
+const controller = new EventsController();
 
-    constructor() {
-        this.eventsController = new EventsController();
-        this.initializeRoutes();
-    }
+router.post('/events/save', controller.saveEvents.bind(controller));
 
-    initializeRoutes() {
-        this.router.post("/events/save", this.eventsController?.saveEvents.bind(this.eventsController))
-    }
-}
-
-export default new EventsRoutes().router;
+export default router;

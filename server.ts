@@ -1,18 +1,18 @@
-import express, { Application } from "express";
-import Server from "./src/index";
+import express, { Application } from 'express';
+import Server from './src/index';
+import { config } from './src/config';
 
 const app: Application = express();
-const server: Server = new Server(app);
-const PORT: number = 3025;
+new Server(app);
 
 app
-  .listen(PORT, "localhost", function () {
-    console.log(`Server is running on port ${PORT}.`);
+  .listen(config.port, 'localhost', () => {
+    console.log(`[rilog-local] Server is running on http://localhost:${config.port}`);
   })
-  .on("error", (err: any) => {
-    if (err.code === "EADDRINUSE") {
-      console.log("Error: address already in use");
+  .on('error', (err: NodeJS.ErrnoException) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`[rilog-local] Error: port ${config.port} is already in use`);
     } else {
-      console.log(err);
+      console.error(err);
     }
   });

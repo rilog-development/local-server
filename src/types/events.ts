@@ -1,13 +1,16 @@
-import { IRilogEventItem } from "./rilog";
+import { IRilogEventItem } from './rilog';
 
-export enum FileFormats {
-    TXT = "txt",
+export interface LogEntry {
+  timestamp: string;
+  uToken: string;
+  appName: string;
+  params?: Record<string, string>;
+  events: IRilogEventItem[];
 }
 
-export interface SaveEvents {
-    appName: string;
-    params?: Record<string, string>;
-    uToken: string;
-    fileFormat: FileFormats;
-    events: IRilogEventItem[];
+export interface SaveEventsRequest {
+  appName: string;
+  params?: Record<string, string>;
+  uToken: string;
+  events: IRilogEventItem[];
 }

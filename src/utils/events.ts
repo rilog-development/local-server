@@ -1,17 +1,22 @@
-import {ERilogEvent, IRilogEventItem} from "../types/rilog";
+import { ERilogEvent, IRilogEventItem } from '../types/rilog';
 
 const getEventTypeLabel = (eventType: ERilogEvent): string => {
-    if (eventType === ERilogEvent.CLICK) return "Click";
-    if (eventType === ERilogEvent.INPUT) return "Input";
-    if (eventType === ERilogEvent.DEBUG_MESSAGE) return "Debug msg";
-    if (eventType === ERilogEvent.REQUEST) return "Request";
-    if (eventType === ERilogEvent.CONSOLE_ERROR) return "CONSOLE";
-    return "";
+  switch (eventType) {
+    case ERilogEvent.REQUEST:       return 'REQUEST';
+    case ERilogEvent.CLICK:         return 'CLICK';
+    case ERilogEvent.INPUT:         return 'INPUT';
+    case ERilogEvent.CONSOLE_ERROR: return 'CONSOLE_ERROR';
+    case ERilogEvent.DEBUG_MESSAGE: return 'DEBUG_MESSAGE';
+    case ERilogEvent.CONSOLE_WARN:  return 'CONSOLE_WARN';
+    default:                        return 'UNKNOWN';
+  }
 };
 
 const getEventRequestStatus = (eventItem: IRilogEventItem): string => {
-    return eventItem.type === ERilogEvent.REQUEST && eventItem.data?.response?.status ? `:${eventItem.data.response.status}` : "";
+  const data = eventItem.data as { response?: { status?: string | null } };
+  return eventItem.type === ERilogEvent.REQUEST && data?.response?.status
+    ? `:${data.response.status}`
+    : '';
 };
 
 export { getEventTypeLabel, getEventRequestStatus };
-

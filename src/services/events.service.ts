@@ -1,83 +1,49 @@
-import fs from "fs/promises";
-import path from "path";
-import { SaveEvents } from "../types/events";
-import { getSlugName } from "../utils";
-import { formatDate, formatTimestamp } from "../utils/date";
-import {getEventRequestStatus, getEventTypeLabel} from "../utils/events";
+import { SaveEventsRequest, LogEntry } from '../types/events';
+import { IFileWriter } from '../writers/IFileWriter';
+import { NdjsonWriter } from '../writers/NdjsonWriter';
+import { JsonWriter } from '../writers/JsonWriter';
+import { TxtWriter } from '../writers/TxtWriter';
+import { fileRotator } from './fileRotator';
+import { config } from '../config';
 
-
-export interface IEventsServis {
-    saveEvents:  (data: SaveEvents) => Promise<boolean>;
-    decodeData: (data: string) => any;
+export interface IEventsService {
+  saveEvents(data: SaveEventsRequest): Promise<string | null>;
+  decodeData(data: string): unknown;
 }
 
-class EventsService implements IEventsServis {
-    async saveEvents({ appName, params, events, uToken, fileFormat }: SaveEvents): Promise<boolean> {
+const writers: Record<string, IFileWriter> = {
+  ndjson: new NdjsonWriter(),
+  json: new JsonWriter(),
+  txt: new TxtWriter(),
+};
 
-        const currentDate = new Date();
-        const folderPath = path.join(__dirname, "../../../logs", getSlugName(appName));
-        const filePath = path.join(folderPath, `logs-${formatDate(currentDate)}-${uToken}.${fileFormat}`);
+class EventsService implements IEventsService {
+  private writer: IFileWriter;
 
-        try{
+  constructor() {
+    this.writer = writers[config.format] ?? writers.ndjson;
+  }
 
-            try {
-                await fs.access(folderPath);
-            } catch (_err) {
-                await fs.mkdir(folderPath, { recursive: true });
-            }
+  async saveEvents(data: SaveEventsRequest): Promise<string | null> {
+    const entry: LogEntry = {
+      timestamp: new Date().toISOString(),
+      uToken: data.uToken,
+      appName: data.appName,
+      params: data.params,
+      events: data.events,
+    };
 
-            try {
-                await fs.access(filePath);
-                await this.appendDataToFile(filePath, events);
-            } catch (_err) {
-                const fileContent = this.generateLogHeader({ appName, params, uToken, date: formatDate(currentDate, true)}) + this.getFormatedEvents(events);
-                await fs.writeFile(filePath, fileContent);
-            }
-        } catch (_err) {
-            return false;
-        }
-
-        return true;
-
+    try {
+      return await fileRotator.write(data.appName, entry, this.writer);
+    } catch (err) {
+      console.error('[rilog-local] write error:', err);
+      return null;
     }
+  }
 
-    decodeData(data: string) {
-        return JSON.parse(data);
-    }
-
-    private async appendDataToFile(filePath: string, events: SaveEvents["events"]) {
-        await fs.appendFile(filePath, this.getFormatedEvents(events));
-    }
-
-    private generateLogHeader({ appName, params, uToken, date}: Partial<SaveEvents> & { date: string }) {
-        return `App: ${appName}\nConnection: ${uToken}\nCreated at: ${date}\n ${this.getFormatedParams(params)}${this.getDivider()}`;
-    }
-
-    private getFormatedParams(params: Record<string, string> | undefined) {
-        if (!params) return '';
-
-        let paramsStr = `Params:\n`;
-
-        Object.keys(params).map((key) => {
-            paramsStr += `${key}: ${params[key]}\n`;
-        });
-
-        return paramsStr;
-    }
-
-    private getDivider() {
-        return `=====================\n`;
-    }
-
-    private getFormatedEvents(events: SaveEvents["events"]) {
-        let eventsRow = "";
-
-        events.forEach((event) => {
-            eventsRow += `[${formatTimestamp(event.date)}] [${getEventTypeLabel(event.type)}${getEventRequestStatus(event)}] Data: ${JSON.stringify(event.data)} Location: ${event.location.href} \n`;
-        });
-
-        return eventsRow;
-    }
+  decodeData(data: string): unknown {
+    return JSON.parse(data);
+  }
 }
 
 export default EventsService;
