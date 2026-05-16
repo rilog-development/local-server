@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import { IFileWriter } from './IFileWriter';
 import { LogEntry } from '../types/events';
-import { ERilogEvent, IRilogRequestItem, IRilogClick, IRilogConsoleData, IRilogMessageData } from '../types/rilog';
+import { ERilogEvent, IRilogRequestItem, IRilogClick, IRilogConsoleData, IRilogMessageData, TDeviceInfo } from '../types/rilog';
 import { getEventTypeLabel } from '../utils/events';
 
 export class TxtWriter implements IFileWriter {
@@ -13,7 +13,8 @@ export class TxtWriter implements IFileWriter {
 
   private formatEntry(entry: LogEntry): string {
     const divider = '─'.repeat(41);
-    const paramsLine = entry.params ? `params: ${JSON.stringify(entry.params)}\n` : '';
+    const deviceLine = entry.deviceInfo ? this.formatDeviceInfo(entry.deviceInfo) : '';
+    const paramsLine = entry.params ? `params: ${JSON.stringify(entry.params)}` : '';
     const eventsLines = entry.events
       .map((ev, i) => `  [${i}] ${this.formatEvent(ev)}`)
       .join('\n');
@@ -21,7 +22,8 @@ export class TxtWriter implements IFileWriter {
     return [
       divider,
       `[${entry.timestamp}] SESSION: ${entry.uToken}  APP: ${entry.appName}`,
-      paramsLine.trimEnd(),
+      deviceLine,
+      paramsLine,
       `EVENTS (${entry.events.length}):`,
       eventsLines,
       divider,
@@ -29,6 +31,12 @@ export class TxtWriter implements IFileWriter {
     ]
       .filter(line => line !== '')
       .join('\n') + '\n';
+  }
+
+  private formatDeviceInfo(d: TDeviceInfo): string {
+    const cpu = d.hardwareConcurrency !== null ? String(d.hardwareConcurrency) : '?';
+    const net = d.connectionType ?? '?';
+    return `DEVICE: ${d.deviceType}  ${d.screenWidth}×${d.screenHeight} (viewport ${d.viewportWidth}×${d.viewportHeight})  dpr=${d.devicePixelRatio}  lang=${d.language}  cpu=${cpu}  net=${net}`;
   }
 
   private formatEvent(ev: { type: ERilogEvent; data: unknown }): string {

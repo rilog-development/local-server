@@ -30,6 +30,7 @@ class EventsService implements IEventsService {
       uToken: data.uToken,
       appName: data.appName,
       params: data.params,
+      deviceInfo: data.deviceInfo,
       events: data.events,
     };
 

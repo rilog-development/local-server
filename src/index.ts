@@ -1,5 +1,7 @@
 import express, { Application } from 'express';
 import cors, { CorsOptions } from 'cors';
+import path from 'path';
+import fs from 'fs';
 import Routes from './routes';
 import { config } from './config';
 
@@ -7,12 +9,13 @@ export default class Server {
   constructor(app: Application) {
     this.config(app);
     new Routes(app);
+    this.serveDashboard(app);
   }
 
   private config(app: Application): void {
     const corsOptions: CorsOptions = {
       origin: config.cors.origins,
-      methods: ['GET', 'POST'],
+      methods: ['GET', 'POST', 'DELETE'],
     };
 
     app.use(cors(corsOptions));
@@ -23,5 +26,16 @@ export default class Server {
     // application/octet-stream for sendBeacon with a binary Blob
     app.use(express.raw({ type: 'application/octet-stream', limit: '10mb' }));
     app.use(express.urlencoded({ extended: true }));
+  }
+
+  private serveDashboard(app: Application): void {
+    const distPath = path.resolve(process.cwd(), 'dashboard/dist');
+    if (!fs.existsSync(distPath)) return;
+
+    app.use(express.static(distPath));
+    // SPA fallback — all non-API routes serve index.html
+    app.get(/^(?!\/api).*$/, (_req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
   }
 }

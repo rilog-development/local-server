@@ -1,0 +1,36 @@
+services:
+  rilog:
+    build: .
+    image: rilog-local-server
+    ports:
+      - "${RILOG_PORT:-3030}:${RILOG_PORT:-3030}"
+    volumes:
+      - ./logs:/app/logs    # logs are stored on the host — accessible as regular files
+    environment:
+      RILOG_HOST: "0.0.0.0"
+      RILOG_PORT: "${RILOG_PORT:-3030}"
+      RILOG_LOGS_DIR: "/app/logs"
+      RILOG_FORMAT: "${RILOG_FORMAT:-ndjson}"
+      RILOG_MAX_FILE_SIZE_MB: "${RILOG_MAX_FILE_SIZE_MB:-10}"
+      RILOG_TIMEZONE: "${RILOG_TIMEZONE:-UTC}"
+      RILOG_CORS_ORIGINS: "${RILOG_CORS_ORIGINS:-}"
+      RILOG_AUTH_ENABLED: "${RILOG_AUTH_ENABLED:-false}"
+      RILOG_AUTH_PASSWORD: "${RILOG_AUTH_PASSWORD:-}"
+      # Storage monitoring
+      RILOG_MAX_TOTAL_SIZE_MB: "${RILOG_MAX_TOTAL_SIZE_MB:-1024}"
+      RILOG_STORAGE_CHECK_INTERVAL_HOURS: "${RILOG_STORAGE_CHECK_INTERVAL_HOURS:-1}"
+      RILOG_ON_EXCEEDED: "${RILOG_ON_EXCEEDED:-warn}"
+      # SMTP (optional — for email alerts)
+      RILOG_SMTP_HOST: "${RILOG_SMTP_HOST:-}"
+      RILOG_SMTP_PORT: "${RILOG_SMTP_PORT:-587}"
+      RILOG_SMTP_SECURE: "${RILOG_SMTP_SECURE:-false}"
+      RILOG_SMTP_USER: "${RILOG_SMTP_USER:-}"
+      RILOG_SMTP_PASS: "${RILOG_SMTP_PASS:-}"
+      RILOG_SMTP_FROM: "${RILOG_SMTP_FROM:-}"
+      RILOG_SMTP_TO: "${RILOG_SMTP_TO:-}"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:${RILOG_PORT:-3030}/api/auth/status"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

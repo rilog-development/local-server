@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import EventsService, { IEventsService } from '../services/events.service';
-import { IRilogEventItem } from '../types/rilog';
+import { IRilogEventItem, TDeviceInfo } from '../types/rilog';
 
 export interface IEventsController {
   saveEvents: (req: Request, res: Response) => Promise<void>;
@@ -14,7 +14,7 @@ class EventsController implements IEventsController {
   }
 
   async saveEvents(req: Request, res: Response): Promise<void> {
-    let body: { events?: string; uToken?: string; appName?: string; params?: Record<string, string> };
+    let body: { events?: string; uToken?: string; appName?: string; params?: Record<string, string>; deviceInfo?: TDeviceInfo };
 
     try {
       if (Buffer.isBuffer(req.body)) {
@@ -54,6 +54,7 @@ class EventsController implements IEventsController {
       uToken: body.uToken,
       appName: body.appName,
       params: body.params,
+      deviceInfo: body.deviceInfo,
       events,
     });
 

@@ -79,3 +79,17 @@ export interface IRilogResponse {
   message?: string;
   file?: string;
 }
+
+export type TDeviceInfo = {
+  userAgent: string;
+  screenWidth: number;
+  screenHeight: number;
+  viewportWidth: number;
+  viewportHeight: number;
+  devicePixelRatio: number;
+  colorDepth: number;
+  language: string;
+  hardwareConcurrency: number | null;
+  deviceType: 'mobile' | 'tablet' | 'desktop';
+  connectionType: string | null;
+};
