@@ -76,6 +76,8 @@ export function applyFilters(
     if (filters.eventTypes.size > 0 && !filters.eventTypes.has(ev.type)) return false;
     if (filters.sessionToken && fe.uToken !== filters.sessionToken) return false;
 
+    if ((filters.statusFilter !== 'all' || filters.urlPattern) && ev.type !== ERilogEvent.REQUEST) return false;
+
     if (ev.type === ERilogEvent.REQUEST) {
       const d = ev.data as { request?: { url?: string }; response?: { status?: string } };
       if (filters.urlPattern && !d?.request?.url?.toLowerCase().includes(filters.urlPattern.toLowerCase())) {
