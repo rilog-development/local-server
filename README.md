@@ -1,13 +1,44 @@
 # rilog-local-server
 
-**Self-hosted log sink for [@rilog-development/rilog-lib](https://github.com/rilog-development/rilog-lib).**
+Captures browser event batches (HTTP requests, clicks, console errors, debug messages) sent by rilog-lib and saves them to structured log files on your disk. Includes a full-featured dashboard to browse and inspect logs — served from the same port, no extra setup needed. No database. No cloud. Runs entirely on your own infrastructure.
 
-Captures browser event batches (HTTP requests, clicks, console errors, debug messages) sent by rilog-lib and saves them to structured log files on your disk. No database. No cloud. Runs entirely on your own infrastructure.
+**Self-hosted log sink with a built-in dashboard for [@rilog-development/rilog-lib](https://github.com/rilog-development/rilog-lib).**
+
+---
+
+## Features
+
+- **Built-in dashboard** — browse logs in the browser at the same port as the server; no separate web server required
+- **Multi-app support** — each app gets its own folder; switch between apps and dates from the sidebar
+- **Powerful filtering** — filter by event type, HTTP status code (2xx / 3xx / 4xx / 5xx / network error), URL pattern, session token, debug label, or full-text search; all filters combine
+- **Event detail panel** — click any event to open a side drawer with full request / response data, headers, body, device info, and custom params
+- **Full-screen code viewer** — expand any request or response body into a Monaco-powered editor for comfortable inspection of large payloads
+- **Session view** — see all sessions from a single log file, jump to events by session token
+- **Dashboard authentication** — optionally require a password to access the dashboard
+- **Multiple log formats** — NDJSON (default), JSON array, or human-readable TXT
+- **Automatic file rotation** — new file part created when the size limit is reached; date-based naming out of the box
+- **Storage monitoring** — configurable threshold with `warn`, `cleanup`, or email alert strategies
+- **Deploy in 3 commands** — Docker Compose image bundles the server and the dashboard; runs on any VPS or local machine
+- **Zero dependencies on external services** — no database, no S3, no auth service; plain files on disk
+
+---
+
+## Screenshots
+
+**Event list** — all captured events for an app and date, with type badges, timestamps, and HTTP status codes at a glance:
+
+![Event list](https://raw.githubusercontent.com/rilog-development/resources/main/example1.png)
+
+**Event detail** — click any event to inspect the full payload: URL, method, request and response body, headers, device info, and custom params:
+
+![Event detail](https://raw.githubusercontent.com/rilog-development/resources/main/example2.png)
 
 ---
 
 ## Table of contents
 
+- [Features](#features)
+- [Screenshots](#screenshots)
 - [How it works](#how-it-works)
 - [Quick start](#quick-start)
 - [Configuration](#configuration)
