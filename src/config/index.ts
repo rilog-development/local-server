@@ -22,6 +22,7 @@ export interface RilogConfig {
   logsDir: string;
   format: 'json' | 'txt' | 'ndjson';
   maxFileSizeMB: number;
+  maxRequestSizeMB: number;
   timezone: string;
   cors: {
     origins: string[];
@@ -39,6 +40,7 @@ const defaultConfig: RilogConfig = {
   logsDir: './logs',
   format: 'ndjson',
   maxFileSizeMB: 10,
+  maxRequestSizeMB: 50,
   timezone: 'UTC',
   cors: {
     origins: ['http://localhost:3000', 'http://localhost:5173'],
@@ -74,6 +76,7 @@ function applyEnvOverrides(cfg: RilogConfig): RilogConfig {
     logsDir: env.RILOG_LOGS_DIR ?? cfg.logsDir,
     format: (env.RILOG_FORMAT as RilogConfig['format']) ?? cfg.format,
     maxFileSizeMB: env.RILOG_MAX_FILE_SIZE_MB ? parseFloat(env.RILOG_MAX_FILE_SIZE_MB) : cfg.maxFileSizeMB,
+    maxRequestSizeMB: env.RILOG_MAX_REQUEST_SIZE_MB ? parseFloat(env.RILOG_MAX_REQUEST_SIZE_MB) : cfg.maxRequestSizeMB,
     timezone: env.RILOG_TIMEZONE ?? cfg.timezone,
     cors: {
       origins: env.RILOG_CORS_ORIGINS ? parseEnvOrigins(env.RILOG_CORS_ORIGINS) : cfg.cors.origins,
