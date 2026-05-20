@@ -27,6 +27,10 @@ export interface Translations {
   filterBy: string;
   reset: string;
   deleteDay: string;
+  downloadDay: string;
+  downloading: string;
+  refresh: string;
+  size: string;
   allTypes: string;
   // FilterBar
   search: string;

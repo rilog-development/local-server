@@ -14,7 +14,7 @@ export function Dashboard() {
   const { selectedApp, selectedDate, t } = useStore();
   const [showDelete, setShowDelete] = useState(false);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['logs', selectedApp, selectedDate],
     queryFn: () => api.getLogs(selectedApp!, selectedDate!),
     enabled: Boolean(selectedApp && selectedDate),
@@ -31,7 +31,7 @@ export function Dashboard() {
     [data?.entries],
   );
 
-  const meta = data?.meta ?? { totalBatches: 0, totalEvents: 0, parts: 0 };
+  const meta = data?.meta ?? { totalBatches: 0, totalEvents: 0, parts: 0, sizeBytes: 0 };
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
@@ -42,7 +42,7 @@ export function Dashboard() {
           <EmptyState />
         ) : (
           <>
-            <StatsBar events={flatEvents} sessions={sessions} meta={meta} onDeleteClick={() => setShowDelete(true)} />
+            <StatsBar events={flatEvents} sessions={sessions} meta={meta} onDeleteClick={() => setShowDelete(true)} onRefresh={() => refetch()} />
             <SessionBar sessions={sessions} />
             <FilterBar />
 

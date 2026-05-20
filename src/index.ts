@@ -13,8 +13,9 @@ export default class Server {
   }
 
   private config(app: Application): void {
+    const allowAll = config.cors.origins.includes('*');
     const corsOptions: CorsOptions = {
-      origin: config.cors.origins,
+      origin: allowAll ? '*' : config.cors.origins,
       methods: ['GET', 'POST', 'DELETE'],
     };
 

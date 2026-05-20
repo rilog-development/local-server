@@ -4,6 +4,12 @@ import { api } from '../api';
 import { useStore } from '../store/useStore';
 import logoUrl from '../assets/Logo-base-sm.svg';
 
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
 export function Sidebar() {
   const { selectedApp, selectedDate, setSelectedApp, setSelectedDate, setToken, lang, setLang, theme, setTheme, t } = useStore();
   const [expandedApp, setExpandedApp] = useState<string | null>(selectedApp);
@@ -71,7 +77,10 @@ export function Sidebar() {
         {!isLoading && !data?.apps.length && (
           <p className="px-4 py-3 text-xs text-white/40">{t.noApps}</p>
         )}
-        {data?.apps.map((app) => (
+        {data?.apps.map((app) => {
+          const appSizes = data.sizes?.[app] ?? {};
+          const totalBytes = Object.values(appSizes).reduce((s, b) => s + b, 0);
+          return (
           <div key={app}>
             <button
               onClick={() => selectApp(app)}
@@ -82,12 +91,17 @@ export function Sidebar() {
               }`}
             >
               <span className="truncate">{app}</span>
-              <svg
-                className={`w-3.5 h-3.5 flex-shrink-0 ml-1 transition-transform ${expandedApp === app ? 'rotate-90' : ''}`}
-                fill="none" viewBox="0 0 24 24" stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+              <div className="flex items-center gap-1.5 flex-shrink-0 ml-1">
+                {totalBytes > 0 && (
+                  <span className="text-[10px] text-white/30">{formatBytes(totalBytes)}</span>
+                )}
+                <svg
+                  className={`w-3.5 h-3.5 transition-transform ${expandedApp === app ? 'rotate-90' : ''}`}
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
             </button>
 
             {expandedApp === app && (
@@ -96,13 +110,16 @@ export function Sidebar() {
                   <button
                     key={date}
                     onClick={() => setSelectedDate(date)}
-                    className={`w-full text-left px-3 py-1.5 text-xs rounded transition-colors ${
+                    className={`w-full text-left px-3 py-1.5 text-xs rounded transition-colors flex items-center justify-between ${
                       selectedDate === date
                         ? 'bg-brand-teal/30 text-brand-lighter font-medium'
                         : 'text-white/50 hover:text-white/80 hover:bg-white/5'
                     }`}
                   >
-                    {date}
+                    <span>{date}</span>
+                    {appSizes[date] > 0 && (
+                      <span className="text-[10px] text-white/25 ml-1">{formatBytes(appSizes[date])}</span>
+                    )}
                   </button>
                 )) : (
                   <p className="px-3 py-1.5 text-xs text-white/30">{t.noLogs}</p>
@@ -110,7 +127,8 @@ export function Sidebar() {
               </div>
             )}
           </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Sign out */}

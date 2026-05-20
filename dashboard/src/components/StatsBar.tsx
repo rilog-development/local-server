@@ -1,13 +1,23 @@
+import { useState } from 'react';
 import { ERilogEvent, FlatEvent, SessionInfo } from '../types/rilog';
 import { Badge } from './Badge';
 import { useStore } from '../store/useStore';
 import { formatEventDate } from '../utils/eventHelpers';
+import { api } from '../api';
 
 interface StatsBarProps {
   events: FlatEvent[];
   sessions: SessionInfo[];
-  meta: { totalBatches: number; totalEvents: number; parts: number };
+  meta: { totalBatches: number; totalEvents: number; parts: number; sizeBytes: number };
   onDeleteClick: () => void;
+  onRefresh: () => void;
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
 const TYPE_ORDER = [
@@ -19,8 +29,19 @@ const TYPE_ORDER = [
   ERilogEvent.INPUT,
 ];
 
-export function StatsBar({ events, sessions, meta, onDeleteClick }: StatsBarProps) {
+export function StatsBar({ events, sessions, meta, onDeleteClick, onRefresh }: StatsBarProps) {
   const { filters, toggleEventType, resetFilters, selectedDate, selectedApp, t } = useStore();
+  const [downloading, setDownloading] = useState(false);
+
+  async function handleDownload() {
+    if (!selectedApp || !selectedDate) return;
+    setDownloading(true);
+    try {
+      await api.downloadLogs(selectedApp, selectedDate);
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   const countByType: Record<number, number> = {};
   for (const fe of events) {
@@ -54,6 +75,11 @@ export function StatsBar({ events, sessions, meta, onDeleteClick }: StatsBarProp
           {meta.parts > 1 && (
             <span className="text-xs text-gray-400 dark:text-gray-500">{meta.parts} {t.parts}</span>
           )}
+          {meta.sizeBytes > 0 && (
+            <span className="text-xs text-gray-400 dark:text-gray-500">
+              {t.size}: <span className="font-medium text-gray-500 dark:text-gray-300">{formatBytes(meta.sizeBytes)}</span>
+            </span>
+          )}
           {errorCount > 0 && (
             <span className="text-red-500 font-medium">⚠ {errorCount} {t.errors}</span>
           )}
@@ -63,6 +89,27 @@ export function StatsBar({ events, sessions, meta, onDeleteClick }: StatsBarProp
           {selectedDate && (
             <span className="text-xs text-gray-400 dark:text-gray-500">{selectedApp} · {selectedDate}</span>
           )}
+          <button
+            onClick={onRefresh}
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {t.refresh}
+          </button>
+          <button
+            onClick={handleDownload}
+            disabled={downloading}
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-brand-teal hover:text-brand-teal/80 hover:bg-brand-lightest dark:hover:bg-brand-dark/30 rounded-lg border border-brand-teal/30 dark:border-brand-teal/20 transition-colors disabled:opacity-50"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            {downloading ? t.downloading : t.downloadDay}
+          </button>
           <button
             onClick={onDeleteClick}
             className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg border border-red-100 dark:border-red-900/30 transition-colors"

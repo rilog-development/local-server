@@ -77,10 +77,18 @@ class LogsController {
       return;
     }
 
+    let sizeBytes = 0;
+    for (const partFile of parts) {
+      try {
+        const s = await fs.stat(path.join(folderPath, partFile));
+        sizeBytes += s.size;
+      } catch { /* ignore */ }
+    }
+
     const totalEvents = entries.reduce((sum, e) => sum + e.events.length, 0);
     res.json({
       entries,
-      meta: { app: appName, date, parts: parts.length, totalBatches: entries.length, totalEvents },
+      meta: { app: appName, date, parts: parts.length, totalBatches: entries.length, totalEvents, sizeBytes },
     });
   }
 
@@ -111,6 +119,42 @@ class LogsController {
     }
 
     res.json({ result: 'SUCCESS', deleted: parts.length });
+  }
+
+  async downloadLogs(req: Request, res: Response): Promise<void> {
+    const { appName, date } = req.params as { appName: string; date: string };
+
+    if (!isValidDate(date)) {
+      res.status(400).json({ result: 'ERROR', message: 'Invalid date format. Use YYYY-MM-DD.' });
+      return;
+    }
+
+    const folderPath = path.resolve(config.logsDir, slugify(appName));
+    const parts = await getPartFiles(folderPath, date);
+
+    if (parts.length === 0) {
+      res.status(404).json({ result: 'ERROR', message: 'No log files found for this date.' });
+      return;
+    }
+
+    const ext = config.format;
+    const filename = `${slugify(appName)}_${date}.log.${ext}`;
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Type', 'application/octet-stream');
+
+    try {
+      for (const partFile of parts) {
+        const content = await fs.readFile(path.join(folderPath, partFile));
+        res.write(content);
+        if (ext === 'ndjson') res.write('\n');
+      }
+      res.end();
+    } catch (err) {
+      console.error('[rilog-local] download error:', err);
+      if (!res.headersSent) {
+        res.status(500).json({ result: 'ERROR', message: 'Failed to read log files' });
+      }
+    }
   }
 }
 

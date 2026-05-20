@@ -1,9 +1,10 @@
-import { apiDelete, apiGet, apiPost } from './client';
+import { apiDelete, apiDownload, apiGet, apiPost } from './client';
 import { LogEntry } from '../types/rilog';
 
 export interface AppsData {
   apps: string[];
   dates: Record<string, string[]>;
+  sizes: Record<string, Record<string, number>>; // app -> date -> bytes
 }
 
 export interface LogsResponse {
@@ -14,6 +15,7 @@ export interface LogsResponse {
     parts: number;
     totalBatches: number;
     totalEvents: number;
+    sizeBytes: number;
   };
 }
 
@@ -47,4 +49,12 @@ export const api = {
 
   deleteLogs: (appName: string, date: string) =>
     apiDelete<DeleteResponse>(`/api/logs/${encodeURIComponent(appName)}/${date}`),
+
+  downloadLogs: (appName: string, date: string) => {
+    const slug = appName.toLowerCase().replace(/\s+/g, '-');
+    return apiDownload(
+      `/api/logs/${encodeURIComponent(appName)}/${date}/download`,
+      `${slug}_${date}.log`,
+    );
+  },
 };

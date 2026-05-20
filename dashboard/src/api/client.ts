@@ -41,3 +41,22 @@ export async function apiDelete<T>(path: string): Promise<T> {
   const res = await fetch(path, { method: 'DELETE', headers: buildHeaders() });
   return handleResponse<T>(res);
 }
+
+export async function apiDownload(path: string, filename: string): Promise<void> {
+  const res = await fetch(path, { headers: buildHeaders() });
+  if (res.status === 401) {
+    localStorage.removeItem('rilog_token');
+    window.dispatchEvent(new Event('rilog:unauthorized'));
+    throw new Error('Unauthorized');
+  }
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
