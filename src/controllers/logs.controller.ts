@@ -141,6 +141,7 @@ class LogsController {
     const filename = `${slugify(appName)}_${date}.log.${ext}`;
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
 
     try {
       for (const partFile of parts) {

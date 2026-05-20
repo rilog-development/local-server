@@ -50,11 +50,13 @@ export async function apiDownload(path: string, filename: string): Promise<void>
     throw new Error('Unauthorized');
   }
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const disposition = res.headers.get('Content-Disposition') ?? '';
+  const match = /filename="([^"]+)"/.exec(disposition);
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = filename;
+  a.download = match?.[1] ?? filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
