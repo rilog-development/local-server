@@ -194,10 +194,12 @@ function ConsoleBody({ data }: { data: unknown }) {
     <div className="space-y-3">
       <DetailRow label={t.source}>{d?.source}</DetailRow>
       <DetailRow label={t.level}>{d?.level}</DetailRow>
-      <div>
-        <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">{t.message}</p>
-        <p className="text-sm text-gray-800 dark:text-gray-100 break-words">{d?.message}</p>
-      </div>
+      {d?.message && (
+        <div>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">{t.message}</p>
+          <CodeBlock value={d.message} label={t.message} language="plaintext" />
+        </div>
+      )}
       {d?.errorFile && (
         <DetailRow label={t.file}>
           {d.errorFile}{d.errorLine ? `:${d.errorLine}` : ''}{d.errorColumn ? `:${d.errorColumn}` : ''}
@@ -206,9 +208,7 @@ function ConsoleBody({ data }: { data: unknown }) {
       {d?.stackTrace && (
         <div>
           <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">{t.stackTrace}</p>
-          <pre className="text-xs font-mono bg-gray-900 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap text-gray-300">
-            {d.stackTrace}
-          </pre>
+          <CodeBlock value={d.stackTrace} label={t.stackTrace} language="plaintext" />
         </div>
       )}
     </div>
@@ -245,7 +245,7 @@ function DebugBody({ data }: { data: unknown }) {
 }
 
 // ── Code block (always dark Monaco) ──────────────────────────────
-function CodeBlock({ value, label }: { value: unknown; label?: string }) {
+function CodeBlock({ value, label, language = 'json' }: { value: unknown; label?: string; language?: string }) {
   const { t } = useStore();
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -289,7 +289,7 @@ function CodeBlock({ value, label }: { value: unknown; label?: string }) {
 
         <Editor
           height={height}
-          defaultLanguage="json"
+          defaultLanguage={language}
           value={code}
           theme="vs-dark"
           options={{

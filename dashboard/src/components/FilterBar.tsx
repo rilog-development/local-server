@@ -1,5 +1,5 @@
 import { useStore } from '../store/useStore';
-import { ERilogEvent } from '../types/rilog';
+import { ERilogEvent, FlatEvent } from '../types/rilog';
 
 const inputCls = 'px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-lg outline-none focus:border-brand-teal focus:ring-1 focus:ring-brand-teal bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition';
 
@@ -10,7 +10,8 @@ export function FilterBar() {
     filters.search !== '' ||
     filters.urlPattern !== '' ||
     filters.labelFilter !== '' ||
-    filters.statusFilter !== 'all';
+    filters.statusFilter !== 'all' ||
+    filters.dedupe;
 
   return (
     <div className="border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 flex items-center gap-3 flex-wrap flex-shrink-0">
@@ -57,6 +58,22 @@ export function FilterBar() {
         className={`${inputCls} w-32`}
       />
 
+      <button
+        onClick={() => setFilter('dedupe', !filters.dedupe)}
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-lg border transition-colors ${
+          filters.dedupe
+            ? 'bg-brand-teal/10 border-brand-teal text-brand-teal dark:bg-brand-teal/20'
+            : 'border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-brand-teal hover:text-brand-teal'
+        }`}
+        title={t.dedupeHint}
+      >
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        </svg>
+        {t.dedupe}
+      </button>
+
       {hasActiveFilters && (
         <button onClick={resetFilters} className="text-xs text-brand-teal hover:underline">
           {t.clearFilters}
@@ -66,10 +83,33 @@ export function FilterBar() {
   );
 }
 
+function getDedupeKey(fe: FlatEvent): string {
+  const { event } = fe;
+  switch (event.type) {
+    case ERilogEvent.CONSOLE_ERROR:
+    case ERilogEvent.CONSOLE_WARN: {
+      const d = event.data as { message?: string; source?: string };
+      return `${event.type}:${d?.source ?? ''}:${d?.message ?? ''}`;
+    }
+    case ERilogEvent.REQUEST: {
+      const d = event.data as { request?: { url?: string; method?: string }; response?: { status?: string } };
+      return `${event.type}:${d?.request?.method ?? ''}:${d?.request?.url ?? ''}:${d?.response?.status ?? ''}`;
+    }
+    case ERilogEvent.DEBUG_MESSAGE: {
+      const d = event.data as { label?: string; data?: unknown };
+      return `${event.type}:${d?.label ?? ''}:${JSON.stringify(d?.data)}`;
+    }
+    default:
+      return `${event.type}:${JSON.stringify(event.data)}`;
+  }
+}
+
 export function applyFilters(
   events: import('../types/rilog').FlatEvent[],
   filters: import('../store/useStore').Filters,
 ): import('../types/rilog').FlatEvent[] {
+  const seen = new Set<string>();
+
   return events.filter((fe) => {
     const ev = fe.event;
 
@@ -104,6 +144,12 @@ export function applyFilters(
       const q = filters.search.toLowerCase();
       const json = JSON.stringify(ev.data).toLowerCase();
       if (!json.includes(q) && !fe.uToken.toLowerCase().includes(q)) return false;
+    }
+
+    if (filters.dedupe) {
+      const key = getDedupeKey(fe);
+      if (seen.has(key)) return false;
+      seen.add(key);
     }
 
     return true;

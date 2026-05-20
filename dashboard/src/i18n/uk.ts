@@ -41,6 +41,8 @@ export const uk: Translations = {
   statusError: 'Мережева помилка',
   label: 'Мітка…',
   clearFilters: 'Очистити фільтри',
+  dedupe: 'Дедублікація',
+  dedupeHint: 'Сховати повторювані події з однаковим вмістом',
   session: 'Сесія:',
   allSessions: 'Всі',
   noEvents: 'Немає подій за цей день',

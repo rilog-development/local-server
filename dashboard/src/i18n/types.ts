@@ -44,6 +44,8 @@ export interface Translations {
   statusError: string;
   label: string;
   clearFilters: string;
+  dedupe: string;
+  dedupeHint: string;
   // SessionBar
   session: string;
   allSessions: string;

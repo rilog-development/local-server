@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
 import { useStore } from '../store/useStore';
 import { Sidebar } from '../components/Sidebar';
@@ -13,6 +13,7 @@ import { flattenEntries, buildSessions } from '../utils/eventHelpers';
 export function Dashboard() {
   const { selectedApp, selectedDate, t } = useStore();
   const [showDelete, setShowDelete] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['logs', selectedApp, selectedDate],
@@ -42,7 +43,7 @@ export function Dashboard() {
           <EmptyState />
         ) : (
           <>
-            <StatsBar events={flatEvents} sessions={sessions} meta={meta} onDeleteClick={() => setShowDelete(true)} onRefresh={() => refetch()} />
+            <StatsBar events={flatEvents} sessions={sessions} meta={meta} onDeleteClick={() => setShowDelete(true)} onRefresh={() => { refetch(); queryClient.invalidateQueries({ queryKey: ['apps'] }); }} />
             <SessionBar sessions={sessions} />
             <FilterBar />
 

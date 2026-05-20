@@ -69,8 +69,15 @@ export function StatsBar({ events, sessions, meta, onDeleteClick, onRefresh }: S
           <span>
             <span className="font-semibold text-brand-dark dark:text-brand-lighter">{sessions.length}</span>{' '}{t.sessions}
           </span>
-          <span title={t.batchesHint} className="cursor-help border-b border-dotted border-gray-400 dark:border-gray-500">
+          <span className="relative group flex items-center gap-1 cursor-default">
             <span className="font-semibold text-brand-dark dark:text-brand-lighter">{meta.totalBatches}</span>{' '}{t.batches}
+            <svg className="w-3 h-3 text-gray-400 dark:text-gray-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 rounded-lg bg-gray-900 px-3 py-2 text-xs text-gray-200 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50 leading-relaxed">
+              {t.batchesHint}
+              <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+            </span>
           </span>
           {meta.parts > 1 && (
             <span className="text-xs text-gray-400 dark:text-gray-500">{meta.parts} {t.parts}</span>

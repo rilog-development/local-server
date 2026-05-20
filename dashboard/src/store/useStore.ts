@@ -10,6 +10,7 @@ export interface Filters {
   statusFilter: 'all' | '2xx' | '3xx' | '4xx' | '5xx' | 'error';
   labelFilter: string;
   search: string;
+  dedupe: boolean;
 }
 
 export type Theme = 'light' | 'dark';
@@ -52,6 +53,7 @@ const defaultFilters: Filters = {
   statusFilter: 'all',
   labelFilter: '',
   search: '',
+  dedupe: false,
 };
 
 // Apply stored theme immediately before first render

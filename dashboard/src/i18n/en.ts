@@ -41,6 +41,8 @@ export const en: Translations = {
   statusError: 'Network error',
   label: 'Label…',
   clearFilters: 'Clear all filters',
+  dedupe: 'Dedupe',
+  dedupeHint: 'Hide duplicate events with identical content',
   session: 'Session:',
   allSessions: 'All',
   noEvents: 'No events for this day',
