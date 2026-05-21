@@ -26,6 +26,7 @@ export const en: Translations = {
   reset: 'Reset',
   deleteDay: 'Delete',
   downloadDay: 'Download',
+  downloadFiltered: 'Download filtered',
   downloading: 'Downloading…',
   refresh: 'Refresh',
   size: 'Size',

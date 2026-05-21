@@ -28,6 +28,7 @@ export interface Translations {
   reset: string;
   deleteDay: string;
   downloadDay: string;
+  downloadFiltered: string;
   downloading: string;
   refresh: string;
   size: string;

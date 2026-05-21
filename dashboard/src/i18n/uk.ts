@@ -26,6 +26,7 @@ export const uk: Translations = {
   reset: 'Скинути',
   deleteDay: 'Видалити',
   downloadDay: 'Завантажити',
+  downloadFiltered: 'Завантажити відфільтровані',
   downloading: 'Завантаження…',
   refresh: 'Оновити',
   size: 'Розмір',

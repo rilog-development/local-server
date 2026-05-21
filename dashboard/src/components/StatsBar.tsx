@@ -4,6 +4,7 @@ import { Badge } from './Badge';
 import { useStore } from '../store/useStore';
 import { formatEventDate } from '../utils/eventHelpers';
 import { api } from '../api';
+import { applyFilters } from './FilterBar';
 
 interface StatsBarProps {
   events: FlatEvent[];
@@ -42,6 +43,30 @@ export function StatsBar({ events, sessions, meta, onDeleteClick, onRefresh }: S
       setDownloading(false);
     }
   }
+
+  function handleDownloadFiltered() {
+    if (!selectedApp || !selectedDate) return;
+    const filtered = applyFilters(events, filters);
+    const json = JSON.stringify(filtered.map(fe => fe.event), null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${selectedApp}_${selectedDate}_filtered.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  const hasActiveFilters =
+    filters.eventTypes.size > 0 ||
+    filters.sessionToken !== '' ||
+    filters.urlPattern !== '' ||
+    filters.statusFilter !== 'all' ||
+    filters.labelFilter !== '' ||
+    filters.search !== '' ||
+    filters.dedupe;
 
   const countByType: Record<number, number> = {};
   for (const fe of events) {
@@ -106,6 +131,18 @@ export function StatsBar({ events, sessions, meta, onDeleteClick, onRefresh }: S
             </svg>
             {t.refresh}
           </button>
+          {hasActiveFilters && (
+            <button
+              onClick={handleDownloadFiltered}
+              className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-violet-500 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-lg border border-violet-200 dark:border-violet-800 transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              {t.downloadFiltered}
+            </button>
+          )}
           <button
             onClick={handleDownload}
             disabled={downloading}
